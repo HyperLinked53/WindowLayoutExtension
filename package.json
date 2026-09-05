@@ -1,0 +1,59 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "window-layouts",
+  "title": "Window Layouts",
+  "description": "Save and restore window arrangements, launching missing apps as needed — a free alternative to Raycast Pro's window layouts.",
+  "icon": "icon.png",
+  "author": "neil",
+  "categories": [
+    "Productivity",
+    "System"
+  ],
+  "license": "MIT",
+  "platforms": [
+    "macOS"
+  ],
+  "commands": [
+    {
+      "name": "save-layout",
+      "title": "Save Layout",
+      "subtitle": "Window Layouts",
+      "description": "Capture the current window arrangement as a named layout",
+      "mode": "view"
+    },
+    {
+      "name": "apply-layout",
+      "title": "Apply Layout",
+      "subtitle": "Window Layouts",
+      "description": "Restore a saved window arrangement, launching missing apps",
+      "mode": "view",
+      "arguments": [
+        {
+          "name": "name",
+          "type": "text",
+          "placeholder": "Layout name",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.94.0",
+    "@raycast/utils": "^1.19.1"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^1.0.11",
+    "@types/node": "22.19.17",
+    "@types/react": "19.0.10",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.4.5"
+  },
+  "scripts": {
+    "build": "ray build",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "publish": "npx @raycast/api@latest publish"
+  }
+}

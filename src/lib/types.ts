@@ -1,3 +1,10 @@
+export interface DisplayBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface LayoutWindow {
   appName: string;
   bundleId: string;
@@ -5,6 +12,8 @@ export interface LayoutWindow {
   y: number;
   width: number;
   height: number;
+  /** Bounds of the display this window was on when saved. Absent for layouts saved before multi-monitor support. */
+  display?: DisplayBounds;
 }
 
 export interface Layout {

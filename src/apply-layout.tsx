@@ -9,18 +9,16 @@ import {
   Alert,
   LaunchProps,
   popToRoot,
+  environment,
 } from "@raycast/api";
 import { useEffect, useRef, useState } from "react";
 import { Layout } from "./lib/types";
 import { getLayouts, deleteLayout } from "./lib/storage";
-import { applyWindow, restoreZOrder } from "./lib/windows";
-
-const EXTENSION_AUTHOR = "neil";
-const EXTENSION_NAME = "window-layouts";
+import { applyWindow, captureDisplays, restoreZOrder } from "./lib/windows";
 
 export function quicklinkFor(layoutName: string): string {
   const args = encodeURIComponent(JSON.stringify({ name: layoutName }));
-  return `raycast://extensions/${EXTENSION_AUTHOR}/${EXTENSION_NAME}/apply-layout?arguments=${args}`;
+  return `raycast://extensions/${environment.ownerOrAuthorName}/${environment.extensionName}/apply-layout?arguments=${args}`;
 }
 
 type Props = LaunchProps<{ arguments: { name?: string } }>;
@@ -55,19 +53,26 @@ export default function ApplyLayoutCommand(props: Props) {
 
   async function handleApply(layout: Layout) {
     const toast = await showToast({ style: Toast.Style.Animated, title: `Applying "${layout.name}"...` });
-    const results = await Promise.all(layout.windows.map(applyWindow));
-    if (layout.zOrder?.length) {
-      await restoreZOrder(layout.zOrder, layout.windows);
-    }
-    const failures = results.filter((r) => !r.ok);
-    if (failures.length === 0) {
-      toast.style = Toast.Style.Success;
-      toast.title = `Applied "${layout.name}"`;
-      toast.message = `${results.length} window${results.length === 1 ? "" : "s"} restored`;
-    } else {
+    try {
+      const currentDisplays = await captureDisplays();
+      const results = await Promise.all(layout.windows.map((w) => applyWindow(w, currentDisplays)));
+      if (layout.zOrder?.length) {
+        await restoreZOrder(layout.zOrder, layout.windows);
+      }
+      const failures = results.filter((r) => !r.ok);
+      if (failures.length === 0) {
+        toast.style = Toast.Style.Success;
+        toast.title = `Applied "${layout.name}"`;
+        toast.message = `${results.length} window${results.length === 1 ? "" : "s"} restored`;
+      } else {
+        toast.style = Toast.Style.Failure;
+        toast.title = `Applied with ${failures.length} error${failures.length === 1 ? "" : "s"}`;
+        toast.message = failures.map((f) => `${f.appName}: ${f.error}`).join("; ");
+      }
+    } catch (error) {
       toast.style = Toast.Style.Failure;
-      toast.title = `Applied with ${failures.length} error${failures.length === 1 ? "" : "s"}`;
-      toast.message = failures.map((f) => `${f.appName}: ${f.error}`).join("; ");
+      toast.title = "Failed to apply layout";
+      toast.message = error instanceof Error ? error.message : String(error);
     }
   }
 
